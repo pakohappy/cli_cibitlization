@@ -11,7 +11,7 @@ unsigned long previousMillis = 0;
 unsigned long interval = 30000;  // Intervalo para verificar la conexión (30 segundos)
 
 void setupWiFi() {
-    //WiFi.mode(WIFI_STA);  // Modo estación
+    WiFi.mode(WIFI_STA);  // Modo estación
     WiFi.begin(ssid, password);
 
     Serial.print("Conectando a WiFi");
