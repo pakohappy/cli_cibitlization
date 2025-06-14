@@ -1,65 +1,72 @@
 #include <Arduino.h>
 #include <WiFi.h>          // Librería WiFi estándar
-#include <EEPROM.h>
+//#include <EEPROM.h>
 
-// Configuración WiFi
-const char* ssid = "TuRedWiFi";         // Nombre de tu red WiFi
-const char* password = "TuContraseña";   // Contraseña de tu red WiFi
-
-// Variables para el estado del WiFi
-unsigned long previousMillis = 0;
-unsigned long interval = 30000;  // Intervalo para verificar la conexión (30 segundos)
-
-void setupWiFi() {
-    WiFi.mode(WIFI_STA);  // Modo estación
-    WiFi.begin(ssid, password);
-
-    Serial.print("Conectando a WiFi");
-    int intentos = 0;
-
-    while (WiFi.status() != WL_CONNECTED && intentos < 20) {  // Tiempo máximo de espera
-        delay(500);
-        Serial.print(".");
-        intentos++;
-    }
-
-    if (WiFi.status() == WL_CONNECTED) {
-        Serial.println("\n¡Conectado!");
-        Serial.print("Dirección IP: ");
-        Serial.println(WiFi.localIP());
-        Serial.print("Fuerza de la señal (RSSI): ");
-        Serial.println(WiFi.RSSI());
-    } else {
-        Serial.println("\nError al conectar");
+void printEncryptionType(const int thisType) {
+    // read the encryption type and print out the name:
+    switch (thisType) {
+        case ENC_TYPE_WEP:
+            Serial.println("WEP");
+            break;
+        case ENC_TYPE_TKIP:
+            Serial.println("WPA");
+            break;
+        case ENC_TYPE_CCMP:
+            Serial.println("WPA2");
+            break;
+        case ENC_TYPE_NONE:
+            Serial.println("None");
+            break;
+        case ENC_TYPE_AUTO:
+            Serial.println("Auto");
+            break;
+        default: ;
     }
 }
 
-void checkWiFiConnection() {
-    unsigned long currentMillis = millis();
+void listNetworks() {
+    // Buscando redes Wifi.
+    Serial.println("** Scan Networks **");
+    const int numSsid = WiFi.scanNetworks();
+    if (numSsid == -1) {
+        Serial.println("Couldn't get a wifi connection");
+    }
 
-    if ((WiFi.status() != WL_CONNECTED) && (currentMillis - previousMillis >= interval)) {
-        Serial.println("Reconectando WiFi...");
-        WiFi.disconnect();
-        WiFi.begin(ssid, password);
-        previousMillis = currentMillis;
+    // Imprimir las redes al alcance.
+    Serial.print("number of available networks:");
+    Serial.println(numSsid);
+
+    // print the network number and name for each network found:
+    for (int thisNet = 0; thisNet < numSsid; thisNet++) {
+        Serial.print(thisNet);
+        Serial.print(") ");
+        Serial.print(WiFi.SSID(thisNet));
+        Serial.print("\tSignal: ");
+        Serial.print(WiFi.RSSI(thisNet));
+        Serial.print(" dBm");
+        Serial.print("\tEncryption: ");
+        printEncryptionType(WiFi.encryptionType(thisNet));
     }
 }
 
 void setup() {
-    Serial.begin(115200);
-    delay(100);
+    // Inicializar serial y esperar a puerto abierto.
+    Serial.begin(9600);
 
-    Serial.println("\nIniciando conexión WiFi...");
-    setupWiFi();
+    // Verificar la presencia de la interfaz wifi.
+    if (WiFi.status() == WL_NO_SHIELD || WiFi.status() == WL_NO_MODULE) {
+        Serial.println("La interfaz Wifi no está disponible.");
+    }
+
+    // Comprobar versión del firmaware.
+    if (const String fv = WiFi.firmwareVersion(); fv != "1.1.0") {
+        Serial.println("Porfavor actualice el firmware de la interfaz Wifi.");
+    }
 }
 
 void loop() {
-    checkWiFiConnection();  // Monitorea la conexión WiFi
-
-    // Aquí puedes añadir tu código principal
-    if (WiFi.status() == WL_CONNECTED) {
-        // Realizar acciones que requieran conexión WiFi
-    }
-
-    delay(1000);
+    // Buscar las redes disponibles.
+    Serial.println("Buscando redes disponibles...");
+    listNetworks();
+    delay(10000);
 }
