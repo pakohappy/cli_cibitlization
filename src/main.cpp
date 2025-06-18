@@ -27,7 +27,7 @@ void printEncryptionType(const int thisType) {
 void listNetworks() {
     // Buscando redes Wifi.
     Serial.println("** Scan Networks **");
-    const int numSsid = WiFi.scanNetworks();
+    const char numSsid = WiFi.scanNetworks();
     if (numSsid == -1) {
         Serial.println("Couldn't get a wifi connection");
     }
@@ -49,6 +49,9 @@ void listNetworks() {
     }
 }
 
+/////////////////////
+///     SETUP     ///
+/////////////////////
 void setup() {
     // Inicializar serial y esperar a puerto abierto.
     Serial.begin(9600);
@@ -64,9 +67,35 @@ void setup() {
     }
 }
 
+/////////////////////
+///     LOOP      ///
+/////////////////////
 void loop() {
-    // Buscar las redes disponibles.
-    Serial.println("Buscando redes disponibles...");
-    listNetworks();
+    while (WiFi.status() != WL_CONNECTED) {
+        // Buscar las redes disponibles.
+        Serial.println("Buscando redes disponibles...");
+        listNetworks();
+
+        // Elegir red..
+        Serial.println("¿A qué red quieres conectarte? 0, 1, 2...");
+        String red_wifi = Serial.readStringUntil('\n');
+        // Convertimos red_wifi -> int.
+        const int int_red_wifi = red_wifi.toInt();
+
+        Serial.println("Red elegida: " + String(WiFi.SSID(int_red_wifi)));
+
+
+        // Introducir contraseña.
+        Serial.println("Introduce la contraseña:");
+        String pass_wifi = Serial.readStringUntil('\n');
+
+        // Conectarse a la res.
+        WiFi.begin(WiFi.SSID(int_red_wifi), pass_wifi.c_str());
+        // Esperar 10 segundos para conectar.
+        delay(10000);
+    }
+    // Si se conecta, imprimir la red.
+    Serial.println("Conectado a la red: " + String(WiFi.SSID()));
+
     delay(10000);
 }
