@@ -1,6 +1,37 @@
 #include <Arduino.h>
 #include <WiFi.h>          // Librería WiFi estándar
-//#include <EEPROM.h>
+#include <EEPROM.h>
+
+// Direcciones EEPROM.
+#define EEPROM_WIFI_SSID_ADDR 0
+#define EEPROM_WIFI_PASS_ADDR 32
+#define EEPROM_CREDENTIALS_FLAG_ADDR 100
+
+bool Credentials_Saved() {
+    return EEPROM.read(EEPROM_CREDENTIALS_FLAG_ADDR) == 1;
+}
+
+void guardarCredenciales(const String& ssid, const String& password) {
+    // Limpiar las áreas de memoria
+    for (int i = 0; i < 32; i++) {
+        EEPROM.write(EEPROM_WIFI_SSID_ADDR + i, 0);
+        EEPROM.write(EEPROM_WIFI_PASS_ADDR + i, 0);
+    }
+
+    // Guardar SSID
+    for (size_t i = 0; i < ssid.length(); i++) {
+        EEPROM.write(EEPROM_WIFI_SSID_ADDR + i, ssid[i]);
+    }
+
+    // Guardar Password
+    for (size_t i = 0; i < password.length(); i++) {
+        EEPROM.write(EEPROM_WIFI_PASS_ADDR + i, password[i]);
+    }
+
+    // Marcar que hay credenciales guardadas
+    EEPROM.write(EEPROM_CREDENTIALS_FLAG_ADDR, 1);
+}
+
 
 void printEncryptionType(const int thisType) {
     // read the encryption type and print out the name:
