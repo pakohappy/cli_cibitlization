@@ -7,9 +7,10 @@
 #define EEPROM_WIFI_PASS_ADDR 32
 #define EEPROM_CREDENTIALS_FLAG_ADDR 100
 
-bool Credentials_Saved() {
+bool hayCredencialesGuardadas() {
     return EEPROM.read(EEPROM_CREDENTIALS_FLAG_ADDR) == 1;
 }
+
 
 void guardarCredenciales(const String& ssid, const String& password) {
     // Limpiar las áreas de memoria
@@ -30,6 +31,25 @@ void guardarCredenciales(const String& ssid, const String& password) {
 
     // Marcar que hay credenciales guardadas
     EEPROM.write(EEPROM_CREDENTIALS_FLAG_ADDR, 1);
+}
+
+void leerCredenciales(String& ssid, String& password) {
+    ssid = "";
+    password = "";
+
+    // Leer SSID
+    for (int i = 0; i < 32; i++) {
+        const char c = EEPROM.read(EEPROM_WIFI_SSID_ADDR+ i);
+        if (c == 0) break;
+        ssid += c;
+    }
+
+    // Leer Password
+    for (int i = 0; i < 32; i++) {
+        char c = EEPROM.read(EEPROM_WIFI_PASS_ADDR + i);
+        if (c == 0) break;
+        password += c;
+    }
 }
 
 
@@ -81,6 +101,32 @@ void listNetworks() {
 }
 
 void wifi_connect() {
+    if (hayCredencialesGuardadas()) {
+        String ssid, password;
+        leerCredenciales(ssid, password);
+
+        Serial.println("Intentando conectar con credenciales guardadas...");
+        Serial.println("SSID: " + ssid);
+
+        WiFi.begin(ssid.c_str(), password.c_str());
+
+        // Esperar 10 segundos para conectar
+        int intentos = 0;
+        while (WiFi.status() != WL_CONNECTED && intentos < 20) {
+            delay(500);
+            Serial.print(".");
+            intentos++;
+        }
+        Serial.println();
+
+        if (WiFi.status() == WL_CONNECTED) {
+            Serial.println("Conectado a la red: " + String(WiFi.SSID()));
+            return;
+        }
+        Serial.println("No se pudo conectar con las credenciales guardadas");
+    }
+
+    // Si no hay credenciales o la conexión falló, proceder con el método manual
     while (WiFi.status() != WL_CONNECTED) {
         // Buscar las redes disponibles.
         Serial.println("Buscando redes disponibles...");
@@ -132,6 +178,10 @@ void wifi_connect() {
         // Connect to network.
         WiFi.begin(WiFi.SSID(red_numero), pass_wifi.c_str());
 
+        if (WiFi.status() == WL_CONNECTED) {
+            guardarCredenciales(WiFi.SSID(red_numero), pass_wifi);
+            Serial.println("Credenciales guardadas en EEPROM");
+        }
         // Esperar 10 segundos para conectar
         delay(10000);
     }
