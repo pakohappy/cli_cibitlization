@@ -222,13 +222,15 @@ void setup() {
     if (const String fv = WiFi.firmwareVersion(); fv != "0.6.0") {
         Serial.println("Porfavor actualice el firmware de la interfaz Wifi.");
     }
+
+    wifi_connect();
 }
 
 /////////////////////
 ///     LOOP      ///
 /////////////////////
 void loop() {
-    wifi_connect();
+
 
     delay(10000);
 }
