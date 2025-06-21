@@ -76,30 +76,46 @@ void printEncryptionType(const int thisType) {
 }
 
 void listNetworks() {
-    // Buscando redes Wifi.
-    Serial.println("** Scan Networks **");
-    const char numSsid = WiFi.scanNetworks();
-    if (numSsid == -1) {
-        Serial.println("Couldn't get a wifi connection");
+    Serial.println("** Iniciando escaneo de redes **");
+
+    WiFi.disconnect();  // Desconecta de cualquier red previa
+    delay(1000);  // Espera 1 segundo
+
+    Serial.println("Escaneando redes WiFi...");
+    int numSsid = WiFi.scanNetworks();  // scan async = false, show_hidden = true
+
+    // Espera más tiempo para el escaneo
+    if (WiFi.status() == WL_SCAN_COMPLETED) {
+        Serial.println("Escaneo completado");
     }
 
-    // Imprimir las redes al alcance.
-    Serial.print("number of available networks:");
+    Serial.println("");
+
+    if (numSsid == -1) {
+        Serial.println("Error: No se pudo realizar el escaneo");
+        return;
+    }
+
+    if (numSsid == 0) {
+        Serial.println("No se encontraron redes WiFi");
+        return;
+    }
+
+    Serial.print("Redes encontradas: ");
     Serial.println(numSsid);
 
-    // print the network number and name for each network found:
-    for (int thisNet = 0; thisNet < numSsid; thisNet++) {
-        Serial.print(thisNet);
-        Serial.print(") ");
-        Serial.print(WiFi.SSID(thisNet));
-        Serial.print("\tSignal: ");
-        Serial.print(WiFi.RSSI(thisNet));
-        Serial.print(" dBm");
-        Serial.print("\tEncryption: ");
-        printEncryptionType(WiFi.encryptionType(thisNet));
+    for (int i = 0; i < numSsid; i++) {
+        Serial.print(i);
+        Serial.print(": ");
+        Serial.print(WiFi.SSID(i));
+        Serial.print(" (");
+        Serial.print(WiFi.RSSI(i));
+        Serial.print(" dBm) ");
+        Serial.print("Encriptación: ");
+        printEncryptionType(WiFi.encryptionType(i));
+        delay(10);  // Pequeña pausa entre cada red
     }
 }
-
 void wifi_connect() {
     if (hayCredencialesGuardadas()) {
         String ssid, password;
@@ -112,8 +128,8 @@ void wifi_connect() {
 
         // Esperar 10 segundos para conectar
         int intentos = 0;
-        while (WiFi.status() != WL_CONNECTED && intentos < 20) {
-            delay(500);
+        while (WiFi.status() != WL_CONNECTED && intentos < 30) {
+            delay(1000);
             Serial.print(".");
             intentos++;
         }
@@ -189,12 +205,13 @@ void wifi_connect() {
     // Si se conecta, imprimir la red
     Serial.println("Conectado a la red: " + String(WiFi.SSID()));
 }
+
 /////////////////////
 ///     SETUP     ///
 /////////////////////
 void setup() {
     // Inicializar serial y esperar a puerto abierto.
-    Serial.begin(9600);
+    Serial.begin(115200);
 
     // Verificar la presencia de la interfaz wifi.
     if (WiFi.status() == WL_NO_SHIELD || WiFi.status() == WL_NO_MODULE) {
@@ -202,7 +219,7 @@ void setup() {
     }
 
     // Comprobar versión del firmaware.
-    if (const String fv = WiFi.firmwareVersion(); fv != "1.1.0") {
+    if (const String fv = WiFi.firmwareVersion(); fv != "0.6.0") {
         Serial.println("Porfavor actualice el firmware de la interfaz Wifi.");
     }
 }

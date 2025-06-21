@@ -1,4 +1,6 @@
-const uint32_t animation[][4] = {
+#pragma once
+
+const uint32_t logoanimation[][4] = {
 	{
 		0x0,
 		0x3e0360f,
