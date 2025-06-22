@@ -14,8 +14,6 @@ ArduinoLEDMatrix matrix;
 bool hayCredencialesGuardadas() {
     return EEPROM.read(EEPROM_CREDENTIALS_FLAG_ADDR) == 1;
 }
-
-
 void guardarCredenciales(const String& ssid, const String& password) {
     // Limpiar las áreas de memoria
     for (int i = 0; i < 32; i++) {
@@ -36,7 +34,6 @@ void guardarCredenciales(const String& ssid, const String& password) {
     // Marcar que hay credenciales guardadas
     EEPROM.write(EEPROM_CREDENTIALS_FLAG_ADDR, 1);
 }
-
 void leerCredenciales(String& ssid, String& password) {
     ssid = "";
     password = "";
@@ -55,8 +52,6 @@ void leerCredenciales(String& ssid, String& password) {
         password += c;
     }
 }
-
-
 void printEncryptionType(const int thisType) {
     // read the encryption type and print out the name:
     switch (thisType) {
@@ -78,7 +73,6 @@ void printEncryptionType(const int thisType) {
         default: ;
     }
 }
-
 void listNetworks() {
     Serial.println("** Iniciando escaneo de redes **");
 
