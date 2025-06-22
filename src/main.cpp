@@ -2,7 +2,7 @@
 #include <WiFi.h>          // Librería WiFi estándar
 #include <EEPROM.h>
 #include "Arduino_LED_Matrix.h"
-#include "libs/animations/logoanimation.h"
+#include "libs/animations/logoscroll.h"
 
 // Direcciones EEPROM.
 #define EEPROM_WIFI_SSID_ADDR 0
@@ -218,7 +218,7 @@ void setup() {
     Serial.begin(115200);
 
     // you can also load frames at runtime, without stopping the refresh
-    matrix.loadSequence(logoanimation);
+    matrix.loadSequence(logoscroll);
     matrix.begin();
     matrix.autoscroll(1000); // No está funcionando.
     matrix.play(true);
