@@ -217,7 +217,6 @@ void setup() {
     // Inicializar serial y esperar a puerto abierto.
     Serial.begin(115200);
 
-    // you can also load frames at runtime, without stopping the refresh
     matrix.loadSequence(logoscroll);
     matrix.begin();
     matrix.autoscroll(1000); // No está funcionando.
