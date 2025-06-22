@@ -11,10 +11,10 @@
 
 ArduinoLEDMatrix matrix;
 
-bool hayCredencialesGuardadas() {
+bool has_stored_credentials() {
     return EEPROM.read(EEPROM_CREDENTIALS_FLAG_ADDR) == 1;
 }
-void guardarCredenciales(const String& ssid, const String& password) {
+void save_credentials(const String& ssid, const String& password) {
     // Limpiar las áreas de memoria
     for (int i = 0; i < 32; i++) {
         EEPROM.write(EEPROM_WIFI_SSID_ADDR + i, 0);
@@ -34,7 +34,7 @@ void guardarCredenciales(const String& ssid, const String& password) {
     // Marcar que hay credenciales guardadas
     EEPROM.write(EEPROM_CREDENTIALS_FLAG_ADDR, 1);
 }
-void leerCredenciales(String& ssid, String& password) {
+void read_credentials(String& ssid, String& password) {
     ssid = "";
     password = "";
 
@@ -52,7 +52,7 @@ void leerCredenciales(String& ssid, String& password) {
         password += c;
     }
 }
-void printEncryptionType(const int thisType) {
+void print_encryption_type(const int thisType) {
     // read the encryption type and print out the name:
     switch (thisType) {
         case ENC_TYPE_WEP:
@@ -73,7 +73,7 @@ void printEncryptionType(const int thisType) {
         default: ;
     }
 }
-void listNetworks() {
+void list_networks() {
     Serial.println("** Iniciando escaneo de redes **");
 
     WiFi.disconnect();  // Desconecta de cualquier red previa
@@ -110,14 +110,14 @@ void listNetworks() {
         Serial.print(WiFi.RSSI(i));
         Serial.print(" dBm) ");
         Serial.print("Encriptación: ");
-        printEncryptionType(WiFi.encryptionType(i));
+        print_encryption_type(WiFi.encryptionType(i));
         delay(10);  // Pequeña pausa entre cada red
     }
 }
 void wifi_connect() {
-    if (hayCredencialesGuardadas()) {
+    if (has_stored_credentials()) {
         String ssid, password;
-        leerCredenciales(ssid, password);
+        read_credentials(ssid, password);
 
         Serial.println("Intentando conectar con credenciales guardadas...");
         Serial.println("SSID: " + ssid);
@@ -140,11 +140,11 @@ void wifi_connect() {
         Serial.println("No se pudo conectar con las credenciales guardadas");
     }
 
-    // Si no hay credenciales o la conexión falló, proceder con el método manual
+    // Si no hay credenciales o la conexión falló, proceder con el método manual.
     while (WiFi.status() != WL_CONNECTED) {
         // Buscar las redes disponibles.
         Serial.println("Buscando redes disponibles...");
-        listNetworks();
+        list_networks();
 
         // Elegir red
         Serial.println("¿A qué red quieres conectarte? 0, 1, 2...");
@@ -193,7 +193,7 @@ void wifi_connect() {
         WiFi.begin(WiFi.SSID(red_numero), pass_wifi.c_str());
 
         if (WiFi.status() == WL_CONNECTED) {
-            guardarCredenciales(WiFi.SSID(red_numero), pass_wifi);
+            save_credentials(WiFi.SSID(red_numero), pass_wifi);
             Serial.println("Credenciales guardadas en EEPROM");
         }
         // Esperar 10 segundos para conectar
