@@ -1,11 +1,15 @@
 #include <Arduino.h>
 #include <WiFi.h>          // Librería WiFi estándar
 #include <EEPROM.h>
+#include "Arduino_LED_Matrix.h"
+#include "libs/animations/logoanimation.h"
 
 // Direcciones EEPROM.
 #define EEPROM_WIFI_SSID_ADDR 0
 #define EEPROM_WIFI_PASS_ADDR 32
 #define EEPROM_CREDENTIALS_FLAG_ADDR 100
+
+ArduinoLEDMatrix matrix;
 
 bool hayCredencialesGuardadas() {
     return EEPROM.read(EEPROM_CREDENTIALS_FLAG_ADDR) == 1;
@@ -212,6 +216,12 @@ void wifi_connect() {
 void setup() {
     // Inicializar serial y esperar a puerto abierto.
     Serial.begin(115200);
+
+    // you can also load frames at runtime, without stopping the refresh
+    matrix.loadSequence(logoanimation);
+    matrix.begin();
+    matrix.autoscroll(1000); // No está funcionando.
+    matrix.play(true);
 
     // Verificar la presencia de la interfaz wifi.
     if (WiFi.status() == WL_NO_SHIELD || WiFi.status() == WL_NO_MODULE) {
